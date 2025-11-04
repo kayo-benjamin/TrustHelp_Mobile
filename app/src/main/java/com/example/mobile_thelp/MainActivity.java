@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         btnEntrar.setEnabled(false);
 
         // ✅ Simular autenticação
-        if (email.equals("admin") && senha.equals("admin")){
+        if (email.equals("admin@admin.com") && senha.equals("admin123")){
             irParaHome();
         }else {
             Toast.makeText(this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();

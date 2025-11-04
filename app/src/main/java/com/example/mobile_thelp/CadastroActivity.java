@@ -18,7 +18,7 @@ public class CadastroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cadastro);
+        setContentView(R.layout.fragment_register);
 
         // Inicializar componentes
         tbxNome = findViewById(R.id.tbx_nome);
@@ -53,4 +53,3 @@ public class CadastroActivity extends AppCompatActivity {
         });
     }
 }
-

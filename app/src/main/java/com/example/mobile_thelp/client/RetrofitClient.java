@@ -2,6 +2,8 @@ package com.example.mobile_thelp.client;
 
 import com.example.mobile_thelp.services.ApiService;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -13,13 +15,14 @@ public class RetrofitClient {
 
     public static ApiService getApiService() {
         if (retrofit == null) {
-
-            // Interceptor para logs
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(logging)
+                    .connectTimeout(30, TimeUnit.SECONDS) // ADD timeout
+                    .readTimeout(30, TimeUnit.SECONDS)    // ADD timeout
+                    .writeTimeout(30, TimeUnit.SECONDS)   // ADD timeout
                     .build();
 
             retrofit = new Retrofit.Builder()

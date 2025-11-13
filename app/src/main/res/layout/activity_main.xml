@@ -22,7 +22,7 @@
         app:layout_constraintVertical_bias="0.15" />
 
     <EditText
-        android:id="@+id/tbx_user"
+        android:id="@+id/tbx_user_login"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -36,7 +36,7 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_title" />
 
     <EditText
-        android:id="@+id/tbx_senha"
+        android:id="@+id/tbx_senha_login"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -47,10 +47,10 @@
         android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tbx_user" />
+        app:layout_constraintTop_toBottomOf="@+id/tbx_user_login" />
 
     <Button
-        android:id="@+id/btn_entrar"
+        android:id="@+id/btn_entrar_login"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -60,7 +60,7 @@
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tbx_senha" />
+        app:layout_constraintTop_toBottomOf="@+id/tbx_senha_login" />
 
     <!-- ✅ PROGRESS BAR -->
     <ProgressBar
@@ -70,7 +70,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_entrar"
+        app:layout_constraintTop_toBottomOf="@+id/btn_entrar_login"
         android:layout_marginTop="16dp" />
 
     <TextView

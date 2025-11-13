@@ -50,6 +50,21 @@
         app:layout_constraintTop_toBottomOf="@+id/tbx_nome" />
 
     <EditText
+        android:id="@+id/tbx_telefone_cadastro"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="40dp"
+        android:background="@drawable/constraints_styles"
+        android:hint="Telefone"
+        android:inputType="phone"
+        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tbx_email_cadastro" />
+
+    <EditText
         android:id="@+id/tbx_senha_cadastro"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -62,7 +77,7 @@
         android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tbx_email_cadastro" />
+        app:layout_constraintTop_toBottomOf="@+id/tbx_telefone_cadastro" />
 
     <Button
         android:id="@+id/btn_cadastrar"

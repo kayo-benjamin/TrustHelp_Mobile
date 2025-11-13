@@ -20,15 +20,15 @@ public class MainActivityEspressoTest {
     @Test
     public void testLoginComSucesso() {
         // Digita o email
-        Espresso.onView(ViewMatchers.withId(R.id.tbx_user))
+        Espresso.onView(ViewMatchers.withId(R.id.tbx_user_login))
                 .perform(ViewActions.replaceText("admin@admin.com"), ViewActions.closeSoftKeyboard());
 
         // Digita a senha
-        Espresso.onView(ViewMatchers.withId(R.id.tbx_senha))
+        Espresso.onView(ViewMatchers.withId(R.id.tbx_senha_login))
                 .perform(ViewActions.replaceText("admin123"), ViewActions.closeSoftKeyboard());
 
         // Clica no botão de entrar
-        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar)).perform(ViewActions.click());
+        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar_login)).perform(ViewActions.click());
 
         // Verifica se a HomeActivity foi aberta (verificando o TextView de boas-vindas)
         Espresso.onView(ViewMatchers.withId(R.id.tv_bem_vindo)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
@@ -37,18 +37,18 @@ public class MainActivityEspressoTest {
     @Test
     public void testLoginComFalha() {
         // Digita um email inválido
-        Espresso.onView(ViewMatchers.withId(R.id.tbx_user))
+        Espresso.onView(ViewMatchers.withId(R.id.tbx_user_login))
                 .perform(ViewActions.replaceText("usuario@errado.com"), ViewActions.closeSoftKeyboard());
 
         // Digita uma senha inválida
-        Espresso.onView(ViewMatchers.withId(R.id.tbx_senha))
+        Espresso.onView(ViewMatchers.withId(R.id.tbx_senha_login))
                 .perform(ViewActions.replaceText("senhaerrada"), ViewActions.closeSoftKeyboard());
 
         // Clica no botão de entrar
-        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar)).perform(ViewActions.click());
+        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar_login)).perform(ViewActions.click());
 
         // Verifica se a tela de login ainda está visível
-        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar_login)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 
     @Test
@@ -64,6 +64,8 @@ public class MainActivityEspressoTest {
                 .perform(ViewActions.replaceText("Novo Usuário"), ViewActions.closeSoftKeyboard());
         Espresso.onView(ViewMatchers.withId(R.id.tbx_email_cadastro))
                 .perform(ViewActions.replaceText("novo@usuario.com"), ViewActions.closeSoftKeyboard());
+        Espresso.onView(ViewMatchers.withId(R.id.tbx_telefone_cadastro))
+                .perform(ViewActions.replaceText("11999999999"), ViewActions.closeSoftKeyboard());
         Espresso.onView(ViewMatchers.withId(R.id.tbx_senha_cadastro))
                 .perform(ViewActions.replaceText("123456"), ViewActions.closeSoftKeyboard());
 
@@ -71,6 +73,6 @@ public class MainActivityEspressoTest {
         Espresso.onView(ViewMatchers.withId(R.id.btn_cadastrar)).perform(ViewActions.click());
 
         // 5. Verifica se a tela de login (MainActivity) é exibida novamente
-        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+        Espresso.onView(ViewMatchers.withId(R.id.btn_entrar_login)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 }

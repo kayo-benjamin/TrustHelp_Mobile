@@ -1,120 +1,94 @@
 package com.example.mobile_thelp;
 
 import android.content.Intent;
-import android.graphics.Paint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mobile_thelp.utils.SessionManager;
+import com.example.mobile_thelp.client.RetrofitClient;
+import com.example.mobile_thelp.model.User;
+import com.example.mobile_thelp.services.ApiService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final String TAG = "MainActivity";
-
-    private EditText tbxUser, tbxSenha;
-    private Button btnEntrar;
+    private EditText editEmail, editSenha;
+    private Button btnLogin;
     private TextView tvCadastro;
-    private ProgressBar progressBar;
-    private SessionManager sessionManager;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // ✅ Inicializar SessionManager
-        sessionManager = new SessionManager(this);
+        editEmail = findViewById(R.id.tbx_user_login);
+        editSenha = findViewById(R.id.tbx_senha_login);
+        btnLogin = findViewById(R.id.btn_entrar_login);
+        tvCadastro = findViewById(R.id.tv_cadastro); // ID do seu TextView de cadastro
 
-        // ✅ Verificar se já está logado
-        if (sessionManager.isLoggedIn()) {
-            irParaHome();
-            return;
-        }
+        apiService = RetrofitClient.getApiService();
 
-        // ✅ Inicializar componentes
-        tbxUser = findViewById(R.id.tbx_user);
-        tbxSenha = findViewById(R.id.tbx_senha);
-        btnEntrar = findViewById(R.id.btn_entrar);
-        tvCadastro = findViewById(R.id.tv_cadastro);
-        progressBar = findViewById(R.id.progress_bar);
-
-        // ✅ Sublinhar texto de cadastro
-        tvCadastro.setPaintFlags(tvCadastro.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-
-        // ✅ Botão Entrar
-        btnEntrar.setOnClickListener(v -> {
-            String email = tbxUser.getText().toString().trim();
-            String senha = tbxSenha.getText().toString().trim();
-
-            if (validarCampos(email, senha)) {
-                fazerLogin(email, senha);
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fazerLogin();
             }
         });
 
-        // ✅ Link para Cadastro
-        tvCadastro.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, CadastroActivity.class);
-            startActivity(intent);
+        tvCadastro.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CadastroActivity.class));
+            }
         });
     }
 
-    // ✅ VALIDAR CAMPOS
-    private boolean validarCampos(String email, String senha) {
-        if (email.isEmpty()) {
-            tbxUser.setError("Digite seu email");
-            tbxUser.requestFocus();
-            return false;
-        }
+    private void fazerLogin() {
+        String email = editEmail.getText().toString().trim();
+        String senha = editSenha.getText().toString().trim();
 
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            tbxUser.setError("Email inválido");
-            tbxUser.requestFocus();
-            return false;
-        }
+        User user = new User();
+        user.setEmail(email);
+        user.setSenha(senha);
 
-        if (senha.isEmpty()) {
-            tbxSenha.setError("Digite sua senha");
-            tbxSenha.requestFocus();
-            return false;
-        }
+        Call<User> call = apiService.login(user);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User usuarioLogado = response.body();
+                    // Salvar usuário logado (SharedPreferences)
+                    salvarUsuarioLogado(usuarioLogado);
+                    Toast.makeText(MainActivity.this, "Login realizado!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, HomeActivity.class)); // Corrigido para ir para HomeActivity
+                    finish();
+                } else {
+                    Toast.makeText(MainActivity.this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        if (senha.length() < 6) {
-            tbxSenha.setError("Senha deve ter no mínimo 6 caracteres");
-            tbxSenha.requestFocus();
-            return false;
-        }
-
-        return true;
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-
-    // ✅ FAZER LOGIN
-    private void fazerLogin(String email, String senha) {
-        progressBar.setVisibility(View.VISIBLE);
-        btnEntrar.setEnabled(false);
-
-        // ✅ Simular autenticação
-        if (email.equals("admin@admin.com") && senha.equals("admin123")){
-            irParaHome();
-        }else {
-            Toast.makeText(this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
-            progressBar.setVisibility(View.GONE);
-            btnEntrar.setEnabled(true);
-        }
-    }
-
-    // ✅ IR PARA TELA HOME
-    private void irParaHome() {
-        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+    private void salvarUsuarioLogado(User user) {
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong("user_id", user.getId());
+        editor.putString("user_name", user.getNome());
+        editor.putString("user_email", user.getEmail());
+        editor.apply();
     }
 }

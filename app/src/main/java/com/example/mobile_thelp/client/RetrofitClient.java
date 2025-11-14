@@ -10,7 +10,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static final String BASE_URL = "http://10.0.2.2:8080"; // Altere para seu IP
+    private static final String BASE_URL = "http://localhost:8080"; // Altere para seu IP
     private static Retrofit retrofit = null;
 
     public static ApiService getApiService() {
@@ -20,9 +20,6 @@ public class RetrofitClient {
 
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(logging)
-                    .connectTimeout(30, TimeUnit.SECONDS) // ADD timeout
-                    .readTimeout(30, TimeUnit.SECONDS)    // ADD timeout
-                    .writeTimeout(30, TimeUnit.SECONDS)   // ADD timeout
                     .build();
 
             retrofit = new Retrofit.Builder()

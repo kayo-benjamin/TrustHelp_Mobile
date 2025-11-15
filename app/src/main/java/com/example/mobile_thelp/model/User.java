@@ -1,27 +1,39 @@
 package com.example.mobile_thelp.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class User {
+    @SerializedName("idUsuario")
     private Long id;
+
+    @SerializedName("usuNome")
     private String nome;
+
+    @SerializedName("usuEmail")
     private String email;
+
+    @SerializedName("usuSenha")
     private String senha;
-    private String telefone;
-    private String cpf;           // ADD este campo
-    private String dataNascimento; // ADD este campo
+
+    // Estes campos são necessários para o cadastro
+    @SerializedName("idPapel")
+    private Integer idPapel;
+
+    @SerializedName("idOrganizacao")
+    private Integer idOrganizacao;
 
     // Construtores
     public User() {}
 
-    public User(String nome, String email, String senha, String telefone, String cpf, String dataNascimento) {
+    public User(String nome, String email, String senha, Integer idPapel, Integer idOrganizacao) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
-        this.telefone = telefone;
-        this.cpf = cpf;
-        this.dataNascimento = dataNascimento;
+        this.idPapel = idPapel;
+        this.idOrganizacao = idOrganizacao;
     }
 
-    // Getters e Setters para TODOS os campos
+    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -34,12 +46,6 @@ public class User {
     public String getSenha() { return senha; }
     public void setSenha(String senha) { this.senha = senha; }
 
-    public String getTelefone() { return telefone; }
-    public void setTelefone(String telefone) { this.telefone = telefone; }
-
-    public String getCpf() { return cpf; }
-    public void setCpf(String cpf) { this.cpf = cpf; }
-
-    public String getDataNascimento() { return dataNascimento; }
-    public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
+    public void setIdPapel(Integer idPapel) { this.idPapel = idPapel; }
+    public void setIdOrganizacao(Integer idOrganizacao) { this.idOrganizacao = idOrganizacao; }
 }

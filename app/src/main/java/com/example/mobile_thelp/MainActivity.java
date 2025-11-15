@@ -12,7 +12,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mobile_thelp.client.RetrofitClient;
-import com.example.mobile_thelp.model.User;
+import com.example.mobile_thelp.model.LoginRequest;
+import com.example.mobile_thelp.model.LoginResponse;
 import com.example.mobile_thelp.services.ApiService;
 
 import retrofit2.Call;
@@ -56,20 +57,17 @@ public class MainActivity extends AppCompatActivity {
         String email = editEmail.getText().toString().trim();
         String senha = editSenha.getText().toString().trim();
 
-        User user = new User();
-        user.setEmail(email);
-        user.setSenha(senha);
+        LoginRequest loginRequest = new LoginRequest(email, senha);
 
-        Call<User> call = apiService.login(user);
-        call.enqueue(new Callback<User>() {
+        Call<LoginResponse> call = apiService.login(loginRequest);
+        call.enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    User usuarioLogado = response.body();
-                    // Salvar usuário logado (SharedPreferences)
-                    salvarUsuarioLogado(usuarioLogado);
-                    Toast.makeText(MainActivity.this, "Login realizado!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(MainActivity.this, HomeActivity.class)); // Corrigido para ir para HomeActivity
+                    String token = response.body().getToken();
+                    salvarToken(token);
+                    Toast.makeText(MainActivity.this, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, HomeActivity.class));
                     finish();
                 } else {
                     Toast.makeText(MainActivity.this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
@@ -77,18 +75,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
                 Toast.makeText(MainActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void salvarUsuarioLogado(User user) {
+    private void salvarToken(String token) {
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong("user_id", user.getId());
-        editor.putString("user_name", user.getNome());
-        editor.putString("user_email", user.getEmail());
+        editor.putString("auth_token", token);
         editor.apply();
     }
 }

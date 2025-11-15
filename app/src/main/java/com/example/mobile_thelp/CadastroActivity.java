@@ -22,7 +22,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CadastroActivity extends AppCompatActivity {
-    private EditText editNome, editEmail, editSenha, editTelefone, editCpf, editDataNascimento;
+    private EditText editNome, editEmail, editSenha, editIdPapel, editIdOrganizacao;
+    private TextView txtLogin;
     private Button btnCadastrar;
     private ApiService apiService;
 
@@ -35,10 +36,10 @@ public class CadastroActivity extends AppCompatActivity {
         editNome = findViewById(R.id.tbx_nome);
         editEmail = findViewById(R.id.tbx_email_cadastro);
         editSenha = findViewById(R.id.tbx_senha_cadastro);
-        editTelefone = findViewById(R.id.tbx_telefone_cadastro);
-        editCpf = findViewById(R.id.editCpf); // ADD
-        editDataNascimento = findViewById(R.id.editDataNascimento); // ADD
+        editIdPapel = findViewById(R.id.editIdPapel);
+        editIdOrganizacao = findViewById(R.id.editIdOrganizacao);
         btnCadastrar = findViewById(R.id.btn_cadastrar);
+        txtLogin = findViewById(R.id.tv_voltar_login);
 
         apiService = RetrofitClient.getApiService();
 
@@ -48,22 +49,33 @@ public class CadastroActivity extends AppCompatActivity {
                 cadastrarUsuario();
             }
         });
+
+        txtLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Volta para a tela de login (MainActivity)
+                startActivity(new Intent(CadastroActivity.this, MainActivity.class));
+                finish(); // Finaliza a CadastroActivity para não ficar na pilha
+            }
+        });
     }
 
     private void cadastrarUsuario() {
         String nome = editNome.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
         String senha = editSenha.getText().toString().trim();
-        String telefone = editTelefone.getText().toString().trim();
-        String cpf = editCpf.getText().toString().trim(); // ADD
-        String dataNascimento = editDataNascimento.getText().toString().trim(); // ADD
+        String idPapelStr = editIdPapel.getText().toString().trim();
+        String idOrganizacaoStr = editIdOrganizacao.getText().toString().trim();
 
-        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || cpf.isEmpty()) {
+        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || idPapelStr.isEmpty() || idOrganizacaoStr.isEmpty()) {
             Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        User user = new User(nome, email, senha, telefone, cpf, dataNascimento);
+        Integer idPapel = Integer.parseInt(idPapelStr);
+        Integer idOrganizacao = Integer.parseInt(idOrganizacaoStr);
+
+        User user = new User(nome, email, senha, idPapel, idOrganizacao);
 
         Call<User> call = apiService.createUser(user);
         call.enqueue(new Callback<User>() {
@@ -71,21 +83,29 @@ public class CadastroActivity extends AppCompatActivity {
             public void onResponse(Call<User> call, Response<User> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(CadastroActivity.this, "Usuário cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
-                    finish();
+                    finish(); // Volta para tela anterior
                 } else {
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Toast.makeText(CadastroActivity.this, "Erro: " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        Toast.makeText(CadastroActivity.this, "Erro no cadastro", Toast.LENGTH_SHORT).show();
+                    String errorMessage = "Erro no cadastro";
+                    if (response.errorBody() != null) {
+                        try {
+                            // Loga o erro exato vindo da API
+                            String errorBody = response.errorBody().string();
+                            Log.e("CadastroError", "Corpo do erro: " + errorBody);
+                            errorMessage += ": Verifique os dados e tente novamente."; // Mensagem mais amigável
+                        } catch (IOException e) {
+                            Log.e("CadastroError", "Erro ao ler o corpo do erro", e);
+                        }
+                    } else {
+                        errorMessage += ": " + response.message();
                     }
+                    Toast.makeText(CadastroActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                Toast.makeText(CadastroActivity.this, "Falha: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                Log.e("CADASTRO", "Erro: " + t.getMessage());
+                Log.e("CadastroError", "Falha na comunicação com a API", t);
+                Toast.makeText(CadastroActivity.this, "Falha na comunicação: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

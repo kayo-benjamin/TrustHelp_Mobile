@@ -16,6 +16,4 @@ public interface ApiService {
     Call<User> login(@Body User user);
 
 
-    @GET("/users")
-    Call<List<User>> getUsers();
 }

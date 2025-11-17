@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mobile_thelp.client.RetrofitClient;
+import com.example.mobile_thelp.model.ApiResponse;
 import com.example.mobile_thelp.model.User;
 import com.example.mobile_thelp.services.ApiService;
 
@@ -77,21 +78,22 @@ public class CadastroActivity extends AppCompatActivity {
 
         User user = new User(nome, email, senha, idPapel, idOrganizacao);
 
-        Call<User> call = apiService.createUser(user);
-        call.enqueue(new Callback<User>() {
+        // Chamar o método de cadastro da API
+        Call<ApiResponse> call = apiService.cadastro(user);
+        call.enqueue(new Callback<ApiResponse>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(CadastroActivity.this, "Usuário cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
+                    // Exibe a mensagem de sucesso que vem da API
+                    Toast.makeText(CadastroActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                     finish(); // Volta para tela anterior
                 } else {
                     String errorMessage = "Erro no cadastro";
                     if (response.errorBody() != null) {
                         try {
-                            // Loga o erro exato vindo da API
                             String errorBody = response.errorBody().string();
                             Log.e("CadastroError", "Corpo do erro: " + errorBody);
-                            errorMessage += ": Verifique os dados e tente novamente."; // Mensagem mais amigável
+                            errorMessage += ": Verifique os dados e tente novamente.";
                         } catch (IOException e) {
                             Log.e("CadastroError", "Erro ao ler o corpo do erro", e);
                         }
@@ -103,7 +105,7 @@ public class CadastroActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
                 Log.e("CadastroError", "Falha na comunicação com a API", t);
                 Toast.makeText(CadastroActivity.this, "Falha na comunicação: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }

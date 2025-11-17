@@ -21,11 +21,11 @@ public class MainActivityEspressoTest {
     public void testLoginComSucesso() {
         // Digita o email
         Espresso.onView(ViewMatchers.withId(R.id.tbx_user_login))
-                .perform(ViewActions.replaceText("admin@admin.com"), ViewActions.closeSoftKeyboard());
+                .perform(ViewActions.replaceText("admin@thelp.com.br"), ViewActions.closeSoftKeyboard());
 
         // Digita a senha
         Espresso.onView(ViewMatchers.withId(R.id.tbx_senha_login))
-                .perform(ViewActions.replaceText("admin123"), ViewActions.closeSoftKeyboard());
+                .perform(ViewActions.replaceText("123456"), ViewActions.closeSoftKeyboard());
 
         // Clica no botão de entrar
         Espresso.onView(ViewMatchers.withId(R.id.btn_entrar_login)).perform(ViewActions.click());
@@ -61,13 +61,15 @@ public class MainActivityEspressoTest {
 
         // 3. Preenche os campos de cadastro
         Espresso.onView(ViewMatchers.withId(R.id.tbx_nome))
-                .perform(ViewActions.replaceText("Novo Usuário"), ViewActions.closeSoftKeyboard());
+                .perform(ViewActions.replaceText("Novo Usuário de Teste"), ViewActions.closeSoftKeyboard());
         Espresso.onView(ViewMatchers.withId(R.id.tbx_email_cadastro))
-                .perform(ViewActions.replaceText("novo@usuario.com"), ViewActions.closeSoftKeyboard());
-        Espresso.onView(ViewMatchers.withId(R.id.tbx_telefone_cadastro))
-                .perform(ViewActions.replaceText("11999999999"), ViewActions.closeSoftKeyboard());
+                .perform(ViewActions.replaceText("teste@thelp.com.br"), ViewActions.closeSoftKeyboard());
         Espresso.onView(ViewMatchers.withId(R.id.tbx_senha_cadastro))
                 .perform(ViewActions.replaceText("123456"), ViewActions.closeSoftKeyboard());
+        Espresso.onView(ViewMatchers.withId(R.id.editIdPapel))
+                .perform(ViewActions.replaceText("1"), ViewActions.closeSoftKeyboard());
+        Espresso.onView(ViewMatchers.withId(R.id.editIdOrganizacao))
+                .perform(ViewActions.replaceText("1"), ViewActions.closeSoftKeyboard());
 
         // 4. Clica no botão de cadastrar
         Espresso.onView(ViewMatchers.withId(R.id.btn_cadastrar)).perform(ViewActions.click());

@@ -14,7 +14,7 @@ import retrofit2.http.POST;
 
 public interface ApiService {
 
-    @GET("/users")
+    @GET("users")
     Call<List<User>> getUsers();
 
     @POST("/cadastro")

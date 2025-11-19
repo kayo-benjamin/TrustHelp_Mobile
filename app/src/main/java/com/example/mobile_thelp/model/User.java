@@ -4,18 +4,19 @@ import com.google.gson.annotations.SerializedName;
 
 public class User {
     @SerializedName("idUsuario")
-    private Long id;
+    private Integer idUsuario;
 
     @SerializedName("usuNome")
-    private String nome;
+    private String usuNome;
 
     @SerializedName("usuEmail")
-    private String email;
+    private String usuEmail;
 
     @SerializedName("usuSenha")
-    private String senha;
+    private String usuSenha;
 
-    // Estes campos são necessários para o cadastro
+    // Removido usuCpf pois não é mais usado no cadastro
+    
     @SerializedName("idPapel")
     private Integer idPapel;
 
@@ -25,27 +26,31 @@ public class User {
     // Construtores
     public User() {}
 
-    public User(String nome, String email, String senha, Integer idPapel, Integer idOrganizacao) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
+    // Construtor corrigido para 5 argumentos (sem CPF)
+    public User(String usuNome, String usuEmail, String usuSenha, Integer idPapel, Integer idOrganizacao) {
+        this.usuNome = usuNome;
+        this.usuEmail = usuEmail;
+        this.usuSenha = usuSenha;
         this.idPapel = idPapel;
         this.idOrganizacao = idOrganizacao;
     }
 
     // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(Integer idUsuario) { this.idUsuario = idUsuario; }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public String getUsuNome() { return usuNome; }
+    public void setUsuNome(String usuNome) { this.usuNome = usuNome; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUsuEmail() { return usuEmail; }
+    public void setUsuEmail(String usuEmail) { this.usuEmail = usuEmail; }
 
-    public String getSenha() { return senha; }
-    public void setSenha(String senha) { this.senha = senha; }
+    public String getUsuSenha() { return usuSenha; }
+    public void setUsuSenha(String usuSenha) { this.usuSenha = usuSenha; }
 
+    public Integer getIdPapel() { return idPapel; }
     public void setIdPapel(Integer idPapel) { this.idPapel = idPapel; }
+
+    public Integer getIdOrganizacao() { return idOrganizacao; }
     public void setIdOrganizacao(Integer idOrganizacao) { this.idOrganizacao = idOrganizacao; }
 }

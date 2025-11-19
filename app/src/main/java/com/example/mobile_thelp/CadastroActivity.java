@@ -1,9 +1,7 @@
 package com.example.mobile_thelp;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,16 +14,15 @@ import com.example.mobile_thelp.model.ApiResponse;
 import com.example.mobile_thelp.model.User;
 import com.example.mobile_thelp.services.ApiService;
 
-import java.io.IOException;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CadastroActivity extends AppCompatActivity {
-    private EditText editNome, editEmail, editSenha, editIdPapel, editIdOrganizacao;
-    private TextView txtLogin;
+
+    private EditText etNome, etEmail, etSenha, idPapel, idOrganizacao;
     private Button btnCadastrar;
+    private TextView tvVoltarLogin;
     private ApiService apiService;
 
     @Override
@@ -33,82 +30,80 @@ public class CadastroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
 
-        // Inicializar views
-        editNome = findViewById(R.id.tbx_nome);
-        editEmail = findViewById(R.id.tbx_email_cadastro);
-        editSenha = findViewById(R.id.tbx_senha_cadastro);
-        editIdPapel = findViewById(R.id.editIdPapel);
-        editIdOrganizacao = findViewById(R.id.editIdOrganizacao);
-        btnCadastrar = findViewById(R.id.btn_cadastrar);
-        txtLogin = findViewById(R.id.tv_voltar_login);
-
         apiService = RetrofitClient.getApiService();
 
-        btnCadastrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cadastrarUsuario();
-            }
-        });
+        // VINCULANDO COM OS IDS CORRETOS DO XML
+        etNome = findViewById(R.id.tbx_nome);
+        etEmail = findViewById(R.id.tbx_email_cadastro);
+        etSenha = findViewById(R.id.tbx_senha_cadastro);
+        idPapel = findViewById(R.id.editIdPapel);
+        idOrganizacao = findViewById(R.id.editIdOrganizacao);
+        btnCadastrar = findViewById(R.id.btn_cadastrar);
+        tvVoltarLogin = findViewById(R.id.tv_voltar_login);
 
-        txtLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Volta para a tela de login (MainActivity)
-                startActivity(new Intent(CadastroActivity.this, MainActivity.class));
-                finish(); // Finaliza a CadastroActivity para não ficar na pilha
-            }
+        btnCadastrar.setOnClickListener(v -> fazerCadastro());
+
+        tvVoltarLogin.setOnClickListener(v -> {
+            // Voltar para a tela de login
+            finish();
         });
     }
 
-    private void cadastrarUsuario() {
-        String nome = editNome.getText().toString().trim();
-        String email = editEmail.getText().toString().trim();
-        String senha = editSenha.getText().toString().trim();
-        String idPapelStr = editIdPapel.getText().toString().trim();
-        String idOrganizacaoStr = editIdOrganizacao.getText().toString().trim();
+    private void fazerCadastro() {
+        String nome = etNome.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String senha = etSenha.getText().toString().trim();
+        String papelStr = idPapel.getText().toString().trim();
+        String organizacaoStr = idOrganizacao.getText().toString().trim();
 
-        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || idPapelStr.isEmpty() || idOrganizacaoStr.isEmpty()) {
-            Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show();
+        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || papelStr.isEmpty() || organizacaoStr.isEmpty()) {
+            Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Integer idPapel = Integer.parseInt(idPapelStr);
-        Integer idOrganizacao = Integer.parseInt(idOrganizacaoStr);
+        try {
+            Integer idPapelInt = Integer.parseInt(papelStr);
+            Integer idOrganizacaoInt = Integer.parseInt(organizacaoStr);
 
-        User user = new User(nome, email, senha, idPapel, idOrganizacao);
 
-        // Chamar o método de cadastro da API
-        Call<ApiResponse> call = apiService.cadastro(user);
-        call.enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    // Exibe a mensagem de sucesso que vem da API
-                    Toast.makeText(CadastroActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
-                    finish(); // Volta para tela anterior
-                } else {
-                    String errorMessage = "Erro no cadastro";
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e("CadastroError", "Corpo do erro: " + errorBody);
-                            errorMessage += ": Verifique os dados e tente novamente.";
-                        } catch (IOException e) {
-                            Log.e("CadastroError", "Erro ao ler o corpo do erro", e);
+            User novoUsuario = new User(nome, email, senha, idPapelInt, idOrganizacaoInt);
+
+            Call<ApiResponse> call = apiService.cadastro(novoUsuario);
+            call.enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse apiResponse = response.body();
+
+                        if (apiResponse.isSuccess()) {
+                            Toast.makeText(CadastroActivity.this,
+                                    "Cadastro realizado com sucesso!",
+                                    Toast.LENGTH_LONG).show();
+                            finish(); // Volta para o login
+                        } else {
+                            Toast.makeText(CadastroActivity.this,
+                                    apiResponse.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        errorMessage += ": " + response.message();
+                        Toast.makeText(CadastroActivity.this,
+                                "Erro: " + response.code(),
+                                Toast.LENGTH_SHORT).show();
+                        Log.e("CadastroActivity", "Erro HTTP: " + response.code());
                     }
-                    Toast.makeText(CadastroActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.e("CadastroError", "Falha na comunicação com a API", t);
-                Toast.makeText(CadastroActivity.this, "Falha na comunicação: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(CadastroActivity.this,
+                            "Erro de conexão: " + t.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    Log.e("CadastroActivity", "Erro de conexão", t);
+                }
+            });
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "IDs devem ser números inteiros", Toast.LENGTH_SHORT).show();
+        }
     }
 }

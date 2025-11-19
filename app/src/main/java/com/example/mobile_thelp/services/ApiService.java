@@ -11,15 +11,31 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface ApiService {
 
-    @GET("users")
-    Call<List<User>> getUsers();
+    // Endpoint de login
+    @POST("/auth/login")
+    Call<LoginResponse> login(@Body LoginRequest request);
 
-    @POST("/cadastro")
+    // Endpoint de cadastro
+    @POST("/auth/cadastro")
     Call<ApiResponse> cadastro(@Body User usuario);
 
-    @POST("/login")
-    Call<LoginResponse> login(@Body LoginRequest request);
+    // Listar todos os usuários
+    @GET("/api")
+    Call<List<User>> getUsers();
+
+    // Buscar usuário por ID
+    @GET("/api/{id}")
+    Call<User> getUserById(@Path("id") Integer id);
+
+    // Buscar usuário por email
+    @GET("/api/email/{email}")
+    Call<User> getUserByEmail(@Path("email") String email);
+
+    // Criar novo usuário
+    @POST("/api")
+    Call<ApiResponse> createUser(@Body User usuario);
 }

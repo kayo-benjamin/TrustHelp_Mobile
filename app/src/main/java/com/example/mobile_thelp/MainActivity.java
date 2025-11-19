@@ -51,6 +51,15 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, CadastroActivity.class);
             startActivity(intent);
         });
+
+        Button btnHealthCheck = findViewById(R.id.btn_health_check);
+        btnHealthCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, HealthCheckActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void fazerLogin() {

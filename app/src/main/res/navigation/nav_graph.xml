@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     app:startDestination="@id/loginFragment">
 
+    <!-- Fluxo de Autenticação -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobile_thelp.ui.auth.LoginFragment"
@@ -11,7 +12,9 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_login_to_dashboard"
-            app:destination="@id/dashboardFragment" />
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment" />
@@ -27,30 +30,38 @@
             app:destination="@id/loginFragment" />
     </fragment>
 
+    <!-- Fluxo Principal (Logado) -->
     <fragment
-        android:id="@+id/dashboardFragment"
+        android:id="@+id/navigation_home"
         android:name="com.example.mobile_thelp.ui.home.DashboardFragment"
-        android:label="Chamados"
+        android:label="Início"
         tools:layout="@layout/fragment_dashboard">
         <action
-            android:id="@+id/action_dashboard_to_create"
-            app:destination="@id/createTicketFragment" />
+            android:id="@+id/action_home_to_create"
+            app:destination="@id/navigation_create_ticket" />
         <action
-            android:id="@+id/action_dashboard_to_detail"
+            android:id="@+id/action_home_to_detail"
             app:destination="@id/ticketDetailFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/createTicketFragment"
+        android:id="@+id/navigation_create_ticket"
         android:name="com.example.mobile_thelp.ui.ticket.CreateTicketFragment"
         android:label="Novo Chamado"
         tools:layout="@layout/fragment_create_ticket" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.mobile_thelp.ui.profile.ProfileFragment"
+        android:label="Perfil"
+        tools:layout="@layout/fragment_profile" />
 
     <fragment
         android:id="@+id/ticketDetailFragment"
         android:name="com.example.mobile_thelp.ui.ticket.TicketDetailFragment"
         android:label="Detalhe do Chamado"
         tools:layout="@layout/fragment_ticket_detail">
+        <!-- ✅ Ação Adicionada -->
         <action
             android:id="@+id/action_detail_to_chat"
             app:destination="@id/chatFragment" />
@@ -61,4 +72,5 @@
         android:name="com.example.mobile_thelp.ui.chat.ChatFragment"
         android:label="Chat"
         tools:layout="@layout/fragment_chat" />
+
 </navigation>

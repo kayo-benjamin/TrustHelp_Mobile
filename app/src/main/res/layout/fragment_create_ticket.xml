@@ -1,65 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Novo Chamado"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Título">
+            android:hint="Título do Chamado"
+            android:layout_marginBottom="16dp">
+
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_ticket_title"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Descrição"
-            android:layout_marginTop="12dp">
+            android:hint="Descrição Detalhada"
+            android:layout_marginBottom="16dp">
+
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_ticket_description"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minLines="4"
+                android:layout_height="150dp"
                 android:gravity="top"
-                android:inputType="textMultiLine"/>
+                android:inputType="textMultiLine" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prioridade"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rg_priority"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="ID da Organização"
-            android:layout_marginTop="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <RadioButton
+                android:id="@+id/rb_low"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="number"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Baixa"
+                android:layout_weight="1" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Prioridade"
-            android:layout_marginTop="12dp">
-            <AutoCompleteTextView
-                android:layout_width="match_parent"
+            <RadioButton
+                android:id="@+id/rb_medium"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:text="Média"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Média"
+                android:checked="true"
+                android:layout_weight="1" />
 
-        <com.google.android.material.button.MaterialButton
+            <RadioButton
+                android:id="@+id/rb_high"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alta"
+                android:layout_weight="1" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btn_submit_ticket"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Salvar"
-            android:layout_marginTop="24dp"/>
+            android:text="Abrir Chamado"
+            android:backgroundTint="#2196F3"
+            android:padding="12dp" />
 
     </LinearLayout>
 </ScrollView>

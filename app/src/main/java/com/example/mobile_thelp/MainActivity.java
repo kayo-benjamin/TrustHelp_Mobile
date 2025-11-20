@@ -1,8 +1,10 @@
 package com.example.mobile_thelp;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,53 +15,46 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mobile_thelp.client.RetrofitClient;
-import com.example.mobile_thelp.model.LoginRequest;
-import com.example.mobile_thelp.model.LoginResponse;
 import com.example.mobile_thelp.services.ApiService;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText etEmail, etSenha;
     private Button btnLogin;
-    private TextView tvCadastro; // Declaração do TextView de cadastro
+    private TextView tvCadastro;
     private ProgressBar progressBar;
     private ApiService apiService;
+
+    // MODO DE TESTE SEM API
+    private boolean isOfflineMode = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializar API Service
         apiService = RetrofitClient.getApiService();
 
-        // Inicializar views
         etEmail = findViewById(R.id.tbx_user_login);
         etSenha = findViewById(R.id.tbx_senha_login);
         btnLogin = findViewById(R.id.btn_entrar_login);
-        tvCadastro = findViewById(R.id.tv_cadastro); // Inicialização do TextView
+        tvCadastro = findViewById(R.id.tv_cadastro);
         progressBar = findViewById(R.id.progress_bar);
 
         btnLogin.setOnClickListener(v -> fazerLogin());
 
-        // Configurar o clique para ir para a tela de cadastro
         tvCadastro.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CadastroActivity.class);
             startActivity(intent);
         });
 
         Button btnHealthCheck = findViewById(R.id.btn_health_check);
-        btnHealthCheck.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if (btnHealthCheck != null) {
+            btnHealthCheck.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, HealthCheckActivity.class);
                 startActivity(intent);
-            }
-        });
+            });
+        }
     }
 
     private void fazerLogin() {
@@ -71,59 +66,39 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Mostrar progress bar e desabilitar botão
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
-        LoginRequest loginRequest = new LoginRequest(email, senha);
-
-        Call<LoginResponse> call = apiService.login(loginRequest);
-        call.enqueue(new Callback<LoginResponse>() {
-            @Override
-            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                // Esconder progress bar e reabilitar botão
+        if (isOfflineMode) {
+            // SIMULAÇÃO: Validar credenciais específicas
+            new Handler().postDelayed(() -> {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 btnLogin.setEnabled(true);
 
-                if (response.isSuccessful() && response.body() != null) {
-                    LoginResponse loginResponse = response.body();
+                if (email.equals("admin@thelp.com.br") && senha.equals("123456")) {
+                    Toast.makeText(MainActivity.this, "Login Simulado: Sucesso!", Toast.LENGTH_SHORT).show();
 
-                    if (loginResponse.isSuccess()) {
-                        Toast.makeText(MainActivity.this,
-                                "Login bem-sucedido!",
-                                Toast.LENGTH_LONG).show();
+                    // Salvar dados fake no SharedPreferences
+                    SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putLong("user_id", 1L);
+                    editor.putString("user_name", "Admin Simulado");
+                    editor.putString("user_email", email);
+                    editor.apply();
 
-                        String token = loginResponse.getToken();
-                        Log.d("MainActivity", "Token: " + token);
-
-                        // Navegar para HostActivity (que contém a navegação principal)
-                        Intent intent = new Intent(MainActivity.this, HostActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(MainActivity.this,
-                                loginResponse.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
+                    Intent intent = new Intent(MainActivity.this, HostActivity.class);
+                    startActivity(intent);
+                    finish();
                 } else {
-                    Toast.makeText(MainActivity.this,
-                            "Falha no login. Verifique suas credenciais.",
-                            Toast.LENGTH_SHORT).show();
-                    Log.e("MainActivity", "Erro: " + response.code());
+                    Toast.makeText(MainActivity.this, "Credenciais inválidas (Simulação)", Toast.LENGTH_SHORT).show();
                 }
-            }
+            }, 1000);
 
-            @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
-                // Esconder progress bar e reabilitar botão
-                if (progressBar != null) progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
-
-                Toast.makeText(MainActivity.this,
-                        "Erro de conexão. Verifique se o servidor está rodando.",
-                        Toast.LENGTH_LONG).show();
-                Log.e("MainActivity", "Erro: " + t.getMessage(), t);
-            }
-        });
+        } else {
+            // Código real (conectando na API) ficaria aqui
+            Toast.makeText(this, "Modo Online desativado", Toast.LENGTH_SHORT).show();
+            if (progressBar != null) progressBar.setVisibility(View.GONE);
+            btnLogin.setEnabled(true);
+        }
     }
 }

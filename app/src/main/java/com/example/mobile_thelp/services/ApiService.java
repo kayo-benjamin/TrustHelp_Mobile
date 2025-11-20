@@ -1,6 +1,7 @@
 package com.example.mobile_thelp.services;
 
 import com.example.mobile_thelp.model.ApiResponse;
+import com.example.mobile_thelp.model.Chamado;
 import com.example.mobile_thelp.model.LoginRequest;
 import com.example.mobile_thelp.model.LoginResponse;
 import com.example.mobile_thelp.model.User;
@@ -15,27 +16,24 @@ import retrofit2.http.Path;
 
 public interface ApiService {
 
-    // Endpoint de login
-    @POST("/auth/login")
-    Call<LoginResponse> login(@Body LoginRequest request);
-
-    // Endpoint de cadastro
-    @POST("/auth/cadastro")
+    // --- AUTENTICAÇÃO ---
+    @POST("auth/cadastro")
     Call<ApiResponse> cadastro(@Body User usuario);
 
-    // Listar todos os usuários
-    @GET("/api")
-    Call<List<User>> getUsers();
+    @POST("auth/login")
+    Call<LoginResponse> login(@Body LoginRequest request);
 
-    // Buscar usuário por ID
-    @GET("/api/{id}")
-    Call<User> getUserById(@Path("id") Integer id);
+    // --- USUÁRIOS ---
+    // Buscar dados do usuário pelo ID (para o Dashboard)
+    @GET("usuarios/{id}")
+    Call<User> getUsuarioById(@Path("id") Long id);
 
-    // Buscar usuário por email
-    @GET("/api/email/{email}")
-    Call<User> getUserByEmail(@Path("email") String email);
+    // --- CHAMADOS ---
+    // Criar novo chamado
+    @POST("chamados/save")
+    Call<Chamado> criarChamado(@Body Chamado chamado);
 
-    // Criar novo usuário
-    @POST("/api")
-    Call<ApiResponse> createUser(@Body User usuario);
+    // Listar chamados de um usuário
+    @GET("chamados/usuario/{idUsuario}")
+    Call<List<Chamado>> getChamadosPorUsuario(@Path("idUsuario") Long idUsuario);
 }

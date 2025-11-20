@@ -1,6 +1,8 @@
 package com.example.mobile_thelp;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +26,9 @@ public class CadastroActivity extends AppCompatActivity {
     private Button btnCadastrar;
     private TextView tvVoltarLogin;
     private ApiService apiService;
+
+    // MODO DE TESTE SEM API
+    private boolean isOfflineMode = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,42 +70,35 @@ public class CadastroActivity extends AppCompatActivity {
             Integer idPapelInt = Integer.parseInt(papelStr);
             Integer idOrganizacaoInt = Integer.parseInt(organizacaoStr);
 
+            if (isOfflineMode) {
+                // SIMULAÇÃO DE CADASTRO
+                btnCadastrar.setEnabled(false);
+                Toast.makeText(this, "Simulando cadastro...", Toast.LENGTH_SHORT).show();
 
-            User novoUsuario = new User(nome, email, senha, idPapelInt, idOrganizacaoInt);
+                new Handler().postDelayed(() -> {
+                    btnCadastrar.setEnabled(true);
+                    Toast.makeText(CadastroActivity.this, "Cadastro Simulado com Sucesso!", Toast.LENGTH_LONG).show();
+                    finish(); // Volta para o login
+                }, 1000);
 
-            Call<ApiResponse> call = apiService.cadastro(novoUsuario);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        ApiResponse apiResponse = response.body();
-
-                        if (apiResponse.isSuccess()) {
-                            Toast.makeText(CadastroActivity.this,
-                                    "Cadastro realizado com sucesso!",
-                                    Toast.LENGTH_LONG).show();
-                            finish(); // Volta para o login
-                        } else {
-                            Toast.makeText(CadastroActivity.this,
-                                    apiResponse.getMessage(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(CadastroActivity.this,
-                                "Erro: " + response.code(),
-                                Toast.LENGTH_SHORT).show();
-                        Log.e("CadastroActivity", "Erro HTTP: " + response.code());
+            } else {
+                // CÓDIGO REAL (DESATIVADO TEMPORARIAMENTE)
+                User novoUsuario = new User(nome, email, senha, idPapelInt, idOrganizacaoInt);
+                Call<ApiResponse> call = apiService.cadastro(novoUsuario);
+                call.enqueue(new Callback<ApiResponse>() {
+                    // ... implementação original ...
+                    @Override
+                    public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                        // ...
                     }
-                }
 
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(CadastroActivity.this,
-                            "Erro de conexão: " + t.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                    Log.e("CadastroActivity", "Erro de conexão", t);
-                }
-            });
+                    @Override
+                    public void onFailure(Call<ApiResponse> call, Throwable t) {
+                        // ...
+                    }
+                });
+                Toast.makeText(this, "Modo Online desativado", Toast.LENGTH_SHORT).show();
+            }
 
         } catch (NumberFormatException e) {
             Toast.makeText(this, "IDs devem ser números inteiros", Toast.LENGTH_SHORT).show();

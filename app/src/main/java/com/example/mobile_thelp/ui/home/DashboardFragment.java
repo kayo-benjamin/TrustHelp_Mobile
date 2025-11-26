@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,7 +36,7 @@ public class DashboardFragment extends Fragment {
     private TextView tvWelcomeTitle;
     private ApiService apiService;
     
-    // MODO DE TESTE SEM API (Desativado por padrão para usar API real, mas pode ativar para testar layout)
+    // ✅ MODO ONLINE ATIVADO (Integração API)
     private boolean isOfflineMode = false; 
 
     @Nullable
@@ -54,7 +53,6 @@ public class DashboardFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
         
-        // Configurar nome do usuário
         SharedPreferences prefs = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         String userName = prefs.getString("user_name", "Usuário");
         tvWelcomeTitle.setText("Olá, " + userName + "!");
@@ -63,18 +61,13 @@ public class DashboardFragment extends Fragment {
 
         setupRecyclerView();
         
-        if (isOfflineMode) {
-            loadMockChamados();
-        } else {
-            loadUserChamados();
-        }
+        // Carrega da API
+        loadUserChamados();
 
-        // Botão Novo Chamado
         view.findViewById(R.id.btn_create_ticket).setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.action_home_to_create)
         );
         
-        // Botão Perfil (usando a navegação global)
         view.findViewById(R.id.btn_profile).setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.navigation_profile)
         );
@@ -82,9 +75,8 @@ public class DashboardFragment extends Fragment {
 
     private void setupRecyclerView() {
         rvChamados.setLayoutManager(new LinearLayoutManager(getContext()));
-        // Inicializa com lista vazia
         TicketsAdapter adapter = new TicketsAdapter(new ArrayList<>(), chamado -> {
-            Navigation.findNavController(requireView()).navigate(R.id.action_home_to_detail);
+            Toast.makeText(getContext(), "Detalhes: " + chamado.getTitulo(), Toast.LENGTH_SHORT).show();
         });
         rvChamados.setAdapter(adapter);
     }
@@ -107,15 +99,7 @@ public class DashboardFragment extends Fragment {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
 
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Chamado> chamados = response.body();
-                    if (chamados.isEmpty()) {
-                        Toast.makeText(getContext(), "Nenhum chamado encontrado", Toast.LENGTH_SHORT).show();
-                    }
-                    // Atualizar o adapter com a nova lista
-                    TicketsAdapter adapter = new TicketsAdapter(chamados, item -> 
-                        Navigation.findNavController(requireView()).navigate(R.id.action_home_to_detail)
-                    );
-                    rvChamados.setAdapter(adapter);
+                    updateList(response.body());
                 } else {
                     Toast.makeText(getContext(), "Erro ao carregar: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
@@ -129,19 +113,20 @@ public class DashboardFragment extends Fragment {
         });
     }
     
-    private void loadMockChamados() {
-        if (progressBar != null) progressBar.setVisibility(View.GONE);
-        List<Chamado> mockList = new ArrayList<>();
-        mockList.add(new Chamado("Exemplo de Chamado", "Descrição do problema aqui", 1, 1, "alta"));
-        TicketsAdapter adapter = new TicketsAdapter(mockList, chamado -> {});
+    private void updateList(List<Chamado> chamados) {
+        if (getContext() == null) return;
+        if (chamados.isEmpty()) {
+            Toast.makeText(getContext(), "Nenhum chamado encontrado", Toast.LENGTH_SHORT).show();
+        }
+        TicketsAdapter adapter = new TicketsAdapter(chamados, item -> 
+            Toast.makeText(getContext(), "Abrindo: " + item.getTitulo(), Toast.LENGTH_SHORT).show()
+        );
         rvChamados.setAdapter(adapter);
     }
     
     @Override
     public void onResume() {
         super.onResume();
-        if (!isOfflineMode) {
-            loadUserChamados();
-        }
+        loadUserChamados(); 
     }
 }

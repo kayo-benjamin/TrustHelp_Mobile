@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,7 +14,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mobile_thelp.client.RetrofitClient;
+import com.example.mobile_thelp.model.LoginRequest;
+import com.example.mobile_thelp.model.LoginResponse;
 import com.example.mobile_thelp.services.ApiService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ApiService apiService;
 
-    // MODO DE TESTE SEM API
-    private boolean isOfflineMode = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,36 +72,60 @@ public class MainActivity extends AppCompatActivity {
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
-        if (isOfflineMode) {
-            // SIMULAÇÃO: Validar credenciais específicas
-            new Handler().postDelayed(() -> {
-                if (progressBar != null) progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
+        // CÓDIGO REAL DA API
+        LoginRequest loginRequest = new LoginRequest(email, senha);
 
-                if (email.equals("admin@thelp.com.br") && senha.equals("123456")) {
-                    Toast.makeText(MainActivity.this, "Login Simulado: Sucesso!", Toast.LENGTH_SHORT).show();
 
-                    // Salvar dados fake no SharedPreferences
-                    SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putLong("user_id", 1L);
-                    editor.putString("user_name", "Admin Simulado");
-                    editor.putString("user_email", email);
-                    editor.apply();
+        try {
+            Call<LoginResponse> call = apiService.login(loginRequest);
 
-                    Intent intent = new Intent(MainActivity.this, HostActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(MainActivity.this, "Credenciais inválidas (Simulação)", Toast.LENGTH_SHORT).show();
+            call.enqueue(new Callback<LoginResponse>() {
+                @Override
+                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    btnLogin.setEnabled(true);
+
+                    if (response.isSuccessful() && response.body() != null) {
+                        LoginResponse loginResponse = response.body();
+
+                        if (loginResponse.getToken() != null) {
+                            Toast.makeText(MainActivity.this, "Login bem-sucedido!", Toast.LENGTH_SHORT).show();
+
+                            SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+
+                            if (loginResponse.getUsuario() != null) {
+                                editor.putLong("user_id", loginResponse.getUsuario().getIdUsuario());
+                                editor.putString("user_name", loginResponse.getUsuario().getUsuNome());
+                                editor.putString("user_email", loginResponse.getUsuario().getUsuEmail());
+                            }
+                            editor.putString("auth_token", loginResponse.getToken());
+                            editor.apply();
+
+                            Intent intent = new Intent(MainActivity.this, HostActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Falha na autenticação", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }, 1000);
 
-        } else {
-            // Código real (conectando na API) ficaria aqui
-            Toast.makeText(this, "Modo Online desativado", Toast.LENGTH_SHORT).show();
+                @Override
+                public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    btnLogin.setEnabled(true);
+                    Toast.makeText(MainActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    t.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
             if (progressBar != null) progressBar.setVisibility(View.GONE);
             btnLogin.setEnabled(true);
+            Toast.makeText(this, "ERRO CRÍTICO: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
     }
 }

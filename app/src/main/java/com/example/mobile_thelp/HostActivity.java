@@ -17,7 +17,6 @@ public class HostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host);
 
-        // Encontrar o NavHostFragment
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navHost);
 
@@ -25,8 +24,17 @@ public class HostActivity extends AppCompatActivity {
             NavController navController = navHostFragment.getNavController();
             BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-            // Conectar o menu inferior com o controlador de navegação
+            // Conecta o menu com o controlador de navegação
             NavigationUI.setupWithNavController(bottomNav, navController);
+
+            // CORREÇÃO: Usando o método moderno setOnItemReselectedListener
+            bottomNav.setOnItemReselectedListener(item -> {
+                // Se o item re-selecionado não for o início, não faz nada.
+                // Se for o início, ele limpa a pilha de volta para o Dashboard.
+                if (item.getItemId() == R.id.navigation_home) {
+                    navController.popBackStack(R.id.navigation_home, false);
+                }
+            });
         }
     }
 }

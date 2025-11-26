@@ -1,8 +1,6 @@
 package com.example.mobile_thelp;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,8 +25,8 @@ public class CadastroActivity extends AppCompatActivity {
     private TextView tvVoltarLogin;
     private ApiService apiService;
 
-    // MODO DE TESTE SEM API
-    private boolean isOfflineMode = true;
+    // ✅ MODO ONLINE ATIVADO (Integração API)
+    private boolean isOfflineMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +35,6 @@ public class CadastroActivity extends AppCompatActivity {
 
         apiService = RetrofitClient.getApiService();
 
-        // VINCULANDO COM OS IDS CORRETOS DO XML
         etNome = findViewById(R.id.tbx_nome);
         etEmail = findViewById(R.id.tbx_email_cadastro);
         etSenha = findViewById(R.id.tbx_senha_cadastro);
@@ -49,7 +46,6 @@ public class CadastroActivity extends AppCompatActivity {
         btnCadastrar.setOnClickListener(v -> fazerCadastro());
 
         tvVoltarLogin.setOnClickListener(v -> {
-            // Voltar para a tela de login
             finish();
         });
     }
@@ -70,35 +66,28 @@ public class CadastroActivity extends AppCompatActivity {
             Integer idPapelInt = Integer.parseInt(papelStr);
             Integer idOrganizacaoInt = Integer.parseInt(organizacaoStr);
 
-            if (isOfflineMode) {
-                // SIMULAÇÃO DE CADASTRO
-                btnCadastrar.setEnabled(false);
-                Toast.makeText(this, "Simulando cadastro...", Toast.LENGTH_SHORT).show();
-
-                new Handler().postDelayed(() -> {
+            btnCadastrar.setEnabled(false);
+            User novoUsuario = new User(nome, email, senha, idPapelInt, idOrganizacaoInt);
+            
+            Call<ApiResponse> call = apiService.cadastro(novoUsuario);
+            call.enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                     btnCadastrar.setEnabled(true);
-                    Toast.makeText(CadastroActivity.this, "Cadastro Simulado com Sucesso!", Toast.LENGTH_LONG).show();
-                    finish(); // Volta para o login
-                }, 1000);
-
-            } else {
-                // CÓDIGO REAL (DESATIVADO TEMPORARIAMENTE)
-                User novoUsuario = new User(nome, email, senha, idPapelInt, idOrganizacaoInt);
-                Call<ApiResponse> call = apiService.cadastro(novoUsuario);
-                call.enqueue(new Callback<ApiResponse>() {
-                    // ... implementação original ...
-                    @Override
-                    public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                        // ...
+                    if (response.isSuccessful() && response.body() != null) {
+                        Toast.makeText(CadastroActivity.this, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show();
+                        finish();
+                    } else {
+                        Toast.makeText(CadastroActivity.this, "Erro ao cadastrar: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
+                }
 
-                    @Override
-                    public void onFailure(Call<ApiResponse> call, Throwable t) {
-                        // ...
-                    }
-                });
-                Toast.makeText(this, "Modo Online desativado", Toast.LENGTH_SHORT).show();
-            }
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    btnCadastrar.setEnabled(true);
+                    Toast.makeText(CadastroActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
 
         } catch (NumberFormatException e) {
             Toast.makeText(this, "IDs devem ser números inteiros", Toast.LENGTH_SHORT).show();

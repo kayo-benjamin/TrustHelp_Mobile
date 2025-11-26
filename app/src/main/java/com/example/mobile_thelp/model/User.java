@@ -14,8 +14,6 @@ public class User {
 
     @SerializedName("usuSenha")
     private String usuSenha;
-
-    // Removido usuCpf pois não é mais usado no cadastro
     
     @SerializedName("idPapel")
     private Integer idPapel;
@@ -26,7 +24,6 @@ public class User {
     // Construtores
     public User() {}
 
-    // Construtor corrigido para 5 argumentos (sem CPF)
     public User(String usuNome, String usuEmail, String usuSenha, Integer idPapel, Integer idOrganizacao) {
         this.usuNome = usuNome;
         this.usuEmail = usuEmail;

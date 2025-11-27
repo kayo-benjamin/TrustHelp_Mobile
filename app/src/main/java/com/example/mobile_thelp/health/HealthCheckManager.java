@@ -1,37 +1,45 @@
 package com.example.mobile_thelp.health;
 
 import android.content.Context;
+import com.example.mobile_thelp.client.RetrofitClient;
+import com.example.mobile_thelp.model.HealthCheckResponse;
+import com.example.mobile_thelp.services.ApiService;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HealthCheckManager {
     private Context context;
     private List<HealthCheckResult> results;
+    private ApiService apiService;
 
     public HealthCheckManager(Context context) {
         this.context = context;
         this.results = new ArrayList<>();
+        this.apiService = RetrofitClient.getApiService();
     }
 
     public HealthCheckReport runAllChecks() {
         results.clear();
 
-        // Executar todas as verificações
+        // Executar todas as verificações locais
         checkDatabase();
         checkPermissions();
         checkStorage();
         checkMemory();
-        checkConnectivity();
+
+        // Verificação de conectividade - agora verifica o backend
+        checkBackendConnectivity();
 
         return new HealthCheckReport(results);
     }
 
     private void checkDatabase() {
         try {
-            // Verificar se o banco está acessível
-            // DatabaseHelper db = DatabaseHelper.getInstance(context);
-            // boolean isHealthy = db.isOpen();
-
             results.add(new HealthCheckResult(
                     "Database",
                     HealthStatus.UP,
@@ -49,7 +57,6 @@ public class HealthCheckManager {
     }
 
     private void checkPermissions() {
-        // Verificar permissões críticas
         results.add(new HealthCheckResult(
                 "Permissions",
                 HealthStatus.UP,
@@ -98,13 +105,54 @@ public class HealthCheckManager {
         ));
     }
 
-    private void checkConnectivity() {
-        // Verificação de conectividade sem chamar API
-        results.add(new HealthCheckResult(
-                "Connectivity",
-                HealthStatus.UP,
-                "Network available",
-                System.currentTimeMillis()
-        ));
+    // ✅ NOVO: Verifica a conectividade com o backend
+    private void checkBackendConnectivity() {
+        try {
+            Call<HealthCheckResponse> call = apiService.getBackendHealth();
+            call.enqueue(new Callback<HealthCheckResponse>() {
+                @Override
+                public void onResponse(Call<HealthCheckResponse> call, Response<HealthCheckResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        HealthCheckResponse backendHealth = response.body();
+
+                        HealthStatus status = backendHealth.isHealthy() ? HealthStatus.UP : HealthStatus.DOWN;
+                        String message = String.format("Backend: %s | DB: %s",
+                                backendHealth.getStatus(),
+                                backendHealth.getDatabase());
+
+                        results.add(new HealthCheckResult(
+                                "Backend API",
+                                status,
+                                message,
+                                System.currentTimeMillis()
+                        ));
+                    } else {
+                        results.add(new HealthCheckResult(
+                                "Backend API",
+                                HealthStatus.DOWN,
+                                "Backend responded with error: " + response.code(),
+                                System.currentTimeMillis()
+                        ));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<HealthCheckResponse> call, Throwable t) {
+                    results.add(new HealthCheckResult(
+                            "Backend API",
+                            HealthStatus.DOWN,
+                            "Cannot reach backend: " + t.getMessage(),
+                            System.currentTimeMillis()
+                    ));
+                }
+            });
+        } catch (Exception e) {
+            results.add(new HealthCheckResult(
+                    "Backend API",
+                    HealthStatus.DOWN,
+                    "Error checking backend: " + e.getMessage(),
+                    System.currentTimeMillis()
+            ));
+        }
     }
 }

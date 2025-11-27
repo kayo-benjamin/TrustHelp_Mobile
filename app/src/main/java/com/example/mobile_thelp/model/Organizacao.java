@@ -4,8 +4,12 @@ import com.google.gson.annotations.SerializedName;
 
 public class Organizacao {
 
-    @SerializedName("idOrganizacao")
-    private Long id;
+    // Reforçando o mapeamento com todas as variações prováveis
+    @SerializedName(value = "idOrganizacao", alternate = {"id", "id_organizacao", "pk_organizacao", "id_org"})
+    private Long idOrganizacao;
+
+    @SerializedName("id") // Campo redundante apenas para garantir
+    private Long idGenerico;
 
     @SerializedName("orgNome")
     private String nome;
@@ -32,8 +36,13 @@ public class Organizacao {
         this.ativo = true;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Getter inteligente
+    public Long getId() { 
+        if (idOrganizacao != null) return idOrganizacao;
+        return idGenerico;
+    }
+
+    public void setId(Long id) { this.idOrganizacao = id; }
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }

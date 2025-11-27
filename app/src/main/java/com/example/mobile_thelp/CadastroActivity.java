@@ -1,11 +1,9 @@
 package com.example.mobile_thelp;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,7 +40,7 @@ public class CadastroActivity extends AppCompatActivity {
     private TextView tvVoltarLogin;
     private ApiService apiService;
 
-    private boolean isOfflineMode = false; // Alterar para false para usar a API real
+    private boolean isOfflineMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +82,6 @@ public class CadastroActivity extends AppCompatActivity {
             if (checkedId == R.id.rb_usuario) {
                 layoutUsuario.setVisibility(View.VISIBLE);
                 layoutOrganizacao.setVisibility(View.GONE);
-                // Garante que os campos e botão estejam habilitados ao trocar de aba
                 idOrganizacao.setEnabled(true);
                 btnCadastrar.setEnabled(true);
             } else {
@@ -197,11 +194,9 @@ public class CadastroActivity extends AppCompatActivity {
         try {
             Long orgId = Long.parseLong(organizacaoStr);
             
-            // Verificar se a organização existe antes de cadastrar
             btnCadastrar.setEnabled(false);
             
             if (isOfflineMode) {
-                // Simulação: Org ID 1 existe, outros não
                 if (orgId == 1) cadastrarUsuarioFinal();
                 else showOrganizacaoNaoEncontradaDialog();
             } else {
@@ -210,10 +205,8 @@ public class CadastroActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            // Organização existe, prosseguir
                             cadastrarUsuarioFinal();
                         } else {
-                            // Organização não encontrada (404 ou outro erro)
                             btnCadastrar.setEnabled(true);
                             showOrganizacaoNaoEncontradaDialog();
                         }
@@ -233,11 +226,12 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void showOrganizacaoNaoEncontradaDialog() {
-        new AlertDialog.Builder(this)
+        if (isFinishing()) return;
+        new AlertDialog.Builder(CadastroActivity.this)
                 .setTitle("Organização não encontrada")
                 .setMessage("A organização com este ID não existe.\n\nDeseja cadastrar uma nova organização?")
                 .setPositiveButton("SIM, CADASTRAR", (dialog, which) -> {
-                    rgTipoCadastro.check(R.id.rb_organizacao); // Vai para a aba de organização
+                    rgTipoCadastro.check(R.id.rb_organizacao);
                 })
                 .setNegativeButton("NÃO", (dialog, which) -> {
                     showCredencialIncorretaDialog();
@@ -247,12 +241,13 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void showCredencialIncorretaDialog() {
-        new AlertDialog.Builder(this)
+        if (isFinishing()) return;
+        new AlertDialog.Builder(CadastroActivity.this)
                 .setTitle("Atenção")
                 .setMessage("Para se cadastrar como usuário, é obrigatório fornecer um ID de organização válido.")
                 .setPositiveButton("ENTENDIDO", (dialog, which) -> {
                     dialog.dismiss();
-                    idOrganizacao.requestFocus(); // Foca no campo para corrigir
+                    idOrganizacao.requestFocus();
                 })
                 .setCancelable(false)
                 .show();
@@ -320,10 +315,17 @@ public class CadastroActivity extends AppCompatActivity {
             call.enqueue(new Callback<Organizacao>() {
                 @Override
                 public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
-                    btnCadastrar.setEnabled(true);
                     if (response.isSuccessful() && response.body() != null) {
-                        showSuccessOrgDialog(response.body().getId());
+                        Long orgId = response.body().getId();
+                        if (orgId != null) {
+                            btnCadastrar.setEnabled(true);
+                            showSuccessOrgDialog(orgId);
+                        } else {
+                            // ID veio nulo, tentar buscar pelo CNPJ (Plano B)
+                            buscarOrganizacaoPorCnpj(novaOrg.getCnpj());
+                        }
                     } else {
+                        btnCadastrar.setEnabled(true);
                         Toast.makeText(CadastroActivity.this, "Erro ao criar: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -337,14 +339,40 @@ public class CadastroActivity extends AppCompatActivity {
         }
     }
 
+    private void buscarOrganizacaoPorCnpj(String cnpj) {
+        Call<Organizacao> call = apiService.getOrganizacaoByCnpj(cnpj);
+        call.enqueue(new Callback<Organizacao>() {
+            @Override
+            public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
+                btnCadastrar.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && response.body().getId() != null) {
+                    showSuccessOrgDialog(response.body().getId());
+                } else {
+                    Toast.makeText(CadastroActivity.this, "Org criada, mas não foi possível recuperar o ID.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Organizacao> call, Throwable t) {
+                btnCadastrar.setEnabled(true);
+                Toast.makeText(CadastroActivity.this, "Org criada, erro ao recuperar ID.", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void showSuccessOrgDialog(Long orgId) {
-        new AlertDialog.Builder(this)
+        if (isFinishing()) return;
+
+        String idMsg = (orgId != null) ? String.valueOf(orgId) : "Não identificado";
+
+        new AlertDialog.Builder(CadastroActivity.this)
                 .setTitle("Cadastro Realizado!")
-                .setMessage("Organização cadastrada com sucesso.\nID da Organização: " + orgId + "\n\nDeseja cadastrar um usuário agora?")
+                .setMessage("Organização cadastrada com sucesso.\nID da Organização: " + idMsg + "\n\nDeseja cadastrar um usuário agora?")
                 .setPositiveButton("QUERO", (dialog, which) -> {
                     rgTipoCadastro.check(R.id.rb_usuario);
-                    idOrganizacao.setText(String.valueOf(orgId));
-                    // idOrganizacao.setEnabled(false); // REMOVIDO BLOQUEIO para permitir correção se necessário
+                    if (orgId != null) {
+                        idOrganizacao.setText(String.valueOf(orgId));
+                    }
                     Toast.makeText(this, "Preencha os dados do usuário", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("NÃO QUERO", (dialog, which) -> {

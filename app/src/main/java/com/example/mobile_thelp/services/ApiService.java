@@ -12,22 +12,23 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
     // ============================================
     // AUTENTICAÇÃO
     // ============================================
-
-    // ✅ Endpoint: POST /auth/cadastro
     @POST("auth/cadastro")
     Call<ApiResponse> cadastro(@Body User usuario);
 
-    // ✅ Endpoint: POST /auth/login
+
     @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
 
@@ -35,33 +36,35 @@ public interface ApiService {
     // ORGANIZAÇÃO
     // ============================================
 
-    // ✅ CORRIGIDO: POST /organizacao (sem /save)
     @POST("organizacao")
     Call<Organizacao> criarOrganizacao(@Body Organizacao organizacao);
 
-    // ✅ Endpoint: GET /organizacao/{id}
+
     @GET("organizacao/{id}")
     Call<Organizacao> getOrganizacaoById(@Path("id") Long id);
 
-    // ✅ NOVO: GET /organizacao - listar todas
+
     @GET("organizacao")
     Call<List<Organizacao>> getAllOrganizacoes();
 
-    // ✅ NOVO: GET /organizacao/ativas - listar ativas
     @GET("organizacao/ativas")
     Call<List<Organizacao>> getOrganizacoesAtivas();
 
-    // ✅ NOVO: GET /organizacao/cnpj/{cnpj}
+
     @GET("organizacao/cnpj/{cnpj}")
     Call<Organizacao> getOrganizacaoByCnpj(@Path("cnpj") String cnpj);
 
-    // ✅ NOVO: PUT /organizacao/{id} - atualizar
     @PUT("organizacao/{id}")
     Call<Organizacao> atualizarOrganizacao(@Path("id") Long id, @Body Organizacao organizacao);
 
     // ✅ NOVO: PUT /organizacao/{id}/desativar
     @PUT("organizacao/{id}/desativar")
     Call<Organizacao> desativarOrganizacao(@Path("id") Long id);
+    @POST("organizacao/cadastrar")
+    Call<ApiResponse> cadastrarOrganizacao(@Body Organizacao organizacao);
+
+    @GET("organizacao/verificar/{id}")
+    Call<ApiResponse> verificarOrganizacao(@Path("id") Integer id);
 
     // ============================================
     // USUÁRIOS
@@ -88,12 +91,52 @@ public interface ApiService {
     // ============================================
 
     // ✅ Endpoint: POST /chamados/save
-    @POST("chamados/save")
+    // ============================================
+// CHAMADOS - CORRIGIDO
+// ============================================
+
+// ❌ REMOVER ISSO:
+// @POST("chamados/save")
+// @GET("chamados/usuario/{idUsuario}")
+
+// ✅ USAR ISSO:
+
+    // Criar chamado
+    @POST("api/chamados")
     Call<Chamado> criarChamado(@Body Chamado chamado);
 
-    // ✅ Endpoint: GET /chamados/usuario/{idUsuario}
-    @GET("chamados/usuario/{idUsuario}")
-    Call<List<Chamado>> getChamadosPorUsuario(@Path("idUsuario") Long idUsuario);
+    // Listar todos chamados
+    @GET("api/chamados")
+    Call<List<Chamado>> getAllChamados();
+
+    // Buscar por ID
+    @GET("api/chamados/{id}")
+    Call<Chamado> getChamadoById(@Path("id") Integer id);
+
+    // Buscar por organização
+    @GET("api/chamados/organizacao/{idOrganizacao}")
+    Call<List<Chamado>> getChamadosPorOrganizacao(@Path("idOrganizacao") Integer idOrganizacao);
+
+    // Atualizar chamado
+    @PUT("api/chamados/{id}")
+    Call<Chamado> atualizarChamado(@Path("id") Integer id, @Body Chamado chamado);
+
+    // Atualizar status
+    @PATCH("api/chamados/{id}/status")
+    Call<Chamado> atualizarStatusChamado(@Path("id") Integer id, @Query("status") String status);
+
+    // Atribuir usuário
+    @PATCH("api/chamados/{id}/atribuir")
+    Call<Chamado> atribuirUsuario(@Path("id") Integer id, @Query("idUsuario") Integer idUsuario);
+
+    // Buscar por status
+    @GET("api/chamados/status/{status}")
+    Call<List<Chamado>> getChamadosPorStatus(@Path("status") String status);
+
+    // Deletar chamado
+    @DELETE("api/chamados/{id}")
+    Call<ApiResponse> deleteChamado(@Path("id") Integer id);
+
 
     // ============================================
     // HEALTH CHECK

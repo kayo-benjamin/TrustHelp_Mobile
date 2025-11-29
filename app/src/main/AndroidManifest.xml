@@ -16,6 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobilethelp">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -37,7 +38,6 @@
             android:exported="false"
             android:theme="@style/Theme.Mobilethelp.NoActionBar" />
 
-        <!-- Adicionei a HostActivity aqui -->
         <activity
             android:name=".HostActivity"
             android:exported="false"
@@ -47,6 +47,5 @@
             android:name=".HomeActivity"
             android:exported="false" />
     </application>
-
 
 </manifest>

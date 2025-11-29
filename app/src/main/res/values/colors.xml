@@ -2,4 +2,18 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Roxo Principal (Identidade Visual) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <!-- teal_200 e teal_700 removidos pois já existem em colors_trust_help.xml -->
+
+    <!-- Cores de Fundo e Texto -->
+    <color name="background_color">#F5F5F5</color> <!-- Cinza claro para fundo -->
+    <color name="text_color_primary">#212121</color> <!-- Quase preto para texto -->
+    <color name="text_color_secondary">#757575</color> <!-- Cinza para subtítulos -->
+    <color name="hint_color">#9E9E9E</color> <!-- Cinza claro para placeholders -->
+    
+    <!-- error_color removido pois já existe em colors_trust_help.xml -->
 </resources>

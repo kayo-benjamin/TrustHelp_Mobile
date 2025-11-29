@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ApiService apiService;
 
-    // ✅ MODO OFFLINE ATIVADO PARA TESTES SEM API
-    private boolean isOfflineMode = true;
+    // ✅ MODO ONLINE ATIVADO (Integração API)
+    private boolean isOfflineMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,51 +74,50 @@ public class MainActivity extends AppCompatActivity {
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
-        if (isOfflineMode) {
-            // SIMULAÇÃO DE LOGIN
-            new Handler().postDelayed(() -> {
+        // CÓDIGO REAL DA API
+        LoginRequest loginRequest = new LoginRequest(email, senha);
+        Call<LoginResponse> call = apiService.login(loginRequest);
+        
+        call.enqueue(new Callback<LoginResponse>() {
+            @Override
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 btnLogin.setEnabled(true);
 
-                // Aceita qualquer login para testes ou o admin específico
-                if ((email.equals("admin@thelp.com.br") && senha.equals("123456")) || true) {
-                    Toast.makeText(MainActivity.this, "Login Simulado: Sucesso!", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful() && response.body() != null) {
+                    LoginResponse loginResponse = response.body();
 
-                    SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putLong("user_id", 1L);
-                    editor.putString("user_name", "Admin Teste");
-                    editor.putString("user_email", email);
-                    editor.apply();
+                    if (loginResponse.getToken() != null) {
+                        Toast.makeText(MainActivity.this, "Login bem-sucedido!", Toast.LENGTH_SHORT).show();
 
-                    Intent intent = new Intent(MainActivity.this, HostActivity.class);
-                    startActivity(intent);
-                    finish();
+                        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        
+                        if (loginResponse.getUsuario() != null) {
+                            editor.putLong("user_id", loginResponse.getUsuario().getIdUsuario());
+                            editor.putString("user_name", loginResponse.getUsuario().getUsuNome());
+                            editor.putString("user_email", loginResponse.getUsuario().getUsuEmail());
+                        }
+                        editor.putString("auth_token", loginResponse.getToken());
+                        editor.apply();
+
+                        Intent intent = new Intent(MainActivity.this, HostActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Falha na autenticação", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(MainActivity.this, "Credenciais inválidas", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
                 }
-            }, 1000);
+            }
 
-        } else {
-            // CÓDIGO REAL DA API (DESATIVADO)
-            LoginRequest loginRequest = new LoginRequest(email, senha);
-            Call<LoginResponse> call = apiService.login(loginRequest);
-            
-            call.enqueue(new Callback<LoginResponse>() {
-                @Override
-                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                    if (progressBar != null) progressBar.setVisibility(View.GONE);
-                    btnLogin.setEnabled(true);
-                    // Lógica de sucesso aqui...
-                }
-
-                @Override
-                public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    if (progressBar != null) progressBar.setVisibility(View.GONE);
-                    btnLogin.setEnabled(true);
-                    Toast.makeText(MainActivity.this, "Erro de conexão", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                btnLogin.setEnabled(true);
+                Toast.makeText(MainActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

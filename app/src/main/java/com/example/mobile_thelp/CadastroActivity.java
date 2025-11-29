@@ -19,6 +19,7 @@ import com.example.mobile_thelp.model.ApiResponse;
 import com.example.mobile_thelp.model.Organizacao;
 import com.example.mobile_thelp.model.User;
 import com.example.mobile_thelp.services.ApiService;
+import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -40,6 +41,7 @@ public class CadastroActivity extends AppCompatActivity {
     private TextView tvVoltarLogin;
     private ApiService apiService;
 
+    // ✅ MODO ONLINE ATIVADO
     private boolean isOfflineMode = false;
 
     @Override
@@ -56,20 +58,17 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        // Usuário
         etNome = findViewById(R.id.tbx_nome);
         etEmail = findViewById(R.id.tbx_email_cadastro);
         etSenha = findViewById(R.id.tbx_senha_cadastro);
         idPapel = findViewById(R.id.editIdPapel);
         idOrganizacao = findViewById(R.id.editIdOrganizacao);
 
-        // Organização
         etOrgNome = findViewById(R.id.et_org_nome);
         etOrgCnpj = findViewById(R.id.et_org_cnpj);
         etOrgEmail = findViewById(R.id.et_org_email);
         etOrgTelefone = findViewById(R.id.et_org_telefone);
 
-        // Controles
         layoutUsuario = findViewById(R.id.layout_usuario);
         layoutOrganizacao = findViewById(R.id.layout_organizacao);
         rgTipoCadastro = findViewById(R.id.rg_tipo_cadastro);
@@ -103,81 +102,52 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void setupCnpjMask() {
+        if (etOrgCnpj == null) return;
         etOrgCnpj.addTextChangedListener(new TextWatcher() {
             boolean isUpdating;
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (isUpdating) {
-                    isUpdating = false;
-                    return;
-                }
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isUpdating) { isUpdating = false; return; }
                 String str = s.toString().replaceAll("[^\\d]", "");
                 if (str.length() > 14) str = str.substring(0, 14);
-                
                 StringBuilder masked = new StringBuilder();
-                int len = str.length();
-
-                for (int i = 0; i < len; i++) {
+                for (int i = 0; i < str.length(); i++) {
                     if (i == 2 || i == 5) masked.append(".");
                     else if (i == 8) masked.append("/");
                     else if (i == 12) masked.append("-");
                     masked.append(str.charAt(i));
                 }
-
                 isUpdating = true;
                 etOrgCnpj.setText(masked.toString());
                 etOrgCnpj.setSelection(masked.length());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
     private void setupTelefoneMask() {
+        if (etOrgTelefone == null) return;
         etOrgTelefone.addTextChangedListener(new TextWatcher() {
             boolean isUpdating;
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (isUpdating) {
-                    isUpdating = false;
-                    return;
-                }
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isUpdating) { isUpdating = false; return; }
                 String str = s.toString().replaceAll("[^\\d]", "");
                 if (str.length() > 11) str = str.substring(0, 11);
-                
                 StringBuilder masked = new StringBuilder();
-                int len = str.length();
-
-                if (len > 0) {
+                if (str.length() > 0) {
                     masked.append("(");
-                    for (int i = 0; i < len; i++) {
-                        if (i == 2) {
-                            masked.append(") ");
-                        } else if (i == 7) {
-                            masked.append("-");
-                        }
+                    for (int i = 0; i < str.length(); i++) {
+                        if (i == 2) masked.append(") ");
+                        else if (i == 7) masked.append("-");
                         masked.append(str.charAt(i));
                     }
                 }
-
                 isUpdating = true;
                 etOrgTelefone.setText(masked.toString());
                 etOrgTelefone.setSelection(masked.length());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -193,35 +163,27 @@ public class CadastroActivity extends AppCompatActivity {
 
         try {
             Long orgId = Long.parseLong(organizacaoStr);
-            
             btnCadastrar.setEnabled(false);
             
-            if (isOfflineMode) {
-                if (orgId == 1) cadastrarUsuarioFinal();
-                else showOrganizacaoNaoEncontradaDialog();
-            } else {
-                Call<Organizacao> call = apiService.getOrganizacaoById(orgId);
-                call.enqueue(new Callback<Organizacao>() {
-                    @Override
-                    public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            cadastrarUsuarioFinal();
-                        } else {
-                            btnCadastrar.setEnabled(true);
-                            showOrganizacaoNaoEncontradaDialog();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Organizacao> call, Throwable t) {
+            Call<Organizacao> call = apiService.getOrganizacaoById(orgId);
+            call.enqueue(new Callback<Organizacao>() {
+                @Override
+                public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        cadastrarUsuarioFinal();
+                    } else {
                         btnCadastrar.setEnabled(true);
-                        Toast.makeText(CadastroActivity.this, "Erro ao verificar organização: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        showOrganizacaoNaoEncontradaDialog();
                     }
-                });
-            }
-
+                }
+                @Override
+                public void onFailure(Call<Organizacao> call, Throwable t) {
+                    btnCadastrar.setEnabled(true);
+                    Toast.makeText(CadastroActivity.this, "Erro ao verificar organização: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "ID da Organização inválido", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "ID inválido", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -229,63 +191,36 @@ public class CadastroActivity extends AppCompatActivity {
         if (isFinishing()) return;
         new AlertDialog.Builder(CadastroActivity.this)
                 .setTitle("Organização não encontrada")
-                .setMessage("A organização com este ID não existe.\n\nDeseja cadastrar uma nova organização?")
-                .setPositiveButton("SIM, CADASTRAR", (dialog, which) -> {
-                    rgTipoCadastro.check(R.id.rb_organizacao);
-                })
-                .setNegativeButton("NÃO", (dialog, which) -> {
-                    showCredencialIncorretaDialog();
-                })
-                .setCancelable(false)
-                .show();
-    }
-
-    private void showCredencialIncorretaDialog() {
-        if (isFinishing()) return;
-        new AlertDialog.Builder(CadastroActivity.this)
-                .setTitle("Atenção")
-                .setMessage("Para se cadastrar como usuário, é obrigatório fornecer um ID de organização válido.")
-                .setPositiveButton("ENTENDIDO", (dialog, which) -> {
-                    dialog.dismiss();
-                    idOrganizacao.requestFocus();
-                })
-                .setCancelable(false)
+                .setMessage("Deseja cadastrar uma nova organização?")
+                .setPositiveButton("SIM", (dialog, which) -> rgTipoCadastro.check(R.id.rb_organizacao))
+                .setNegativeButton("NÃO", null)
                 .show();
     }
 
     private void cadastrarUsuarioFinal() {
-        String nome = etNome.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String senha = etSenha.getText().toString().trim();
-        Integer papel = Integer.parseInt(idPapel.getText().toString().trim());
-        Integer org = Integer.parseInt(idOrganizacao.getText().toString().trim());
-
-        User novoUsuario = new User(nome, email, senha, papel, org);
+        User novoUsuario = new User(etNome.getText().toString(), etEmail.getText().toString(), 
+                                  etSenha.getText().toString(), 
+                                  Integer.parseInt(idPapel.getText().toString()), 
+                                  Integer.parseInt(idOrganizacao.getText().toString()));
         
-        if (isOfflineMode) {
-            Toast.makeText(this, "Usuário (Simulado) cadastrado!", Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Call<ApiResponse> call = apiService.cadastro(novoUsuario);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    btnCadastrar.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CadastroActivity.this, "Usuário cadastrado com sucesso!", Toast.LENGTH_LONG).show();
-                        finish();
-                    } else {
-                        Toast.makeText(CadastroActivity.this, "Erro: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
+        Call<ApiResponse> call = apiService.cadastro(novoUsuario);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                btnCadastrar.setEnabled(true);
+                if (response.isSuccessful()) {
+                    Toast.makeText(CadastroActivity.this, "Sucesso!", Toast.LENGTH_LONG).show();
+                    finish();
+                } else {
+                    Toast.makeText(CadastroActivity.this, "Erro: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
-
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    btnCadastrar.setEnabled(true);
-                    Toast.makeText(CadastroActivity.this, "Erro conexão", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                btnCadastrar.setEnabled(true);
+                Toast.makeText(CadastroActivity.this, "Erro conexão", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void cadastrarOrganizacao() {
@@ -305,38 +240,32 @@ public class CadastroActivity extends AppCompatActivity {
         }
 
         btnCadastrar.setEnabled(false);
-        
         Organizacao novaOrg = new Organizacao(nome, cnpj, email, telefone);
 
-        if (isOfflineMode) {
-            showSuccessOrgDialog(123L);
-        } else {
-            Call<Organizacao> call = apiService.criarOrganizacao(novaOrg);
-            call.enqueue(new Callback<Organizacao>() {
-                @Override
-                public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        Long orgId = response.body().getId();
-                        if (orgId != null) {
-                            btnCadastrar.setEnabled(true);
-                            showSuccessOrgDialog(orgId);
-                        } else {
-                            // ID veio nulo, tentar buscar pelo CNPJ (Plano B)
-                            buscarOrganizacaoPorCnpj(novaOrg.getCnpj());
-                        }
-                    } else {
+        Call<Organizacao> call = apiService.criarOrganizacao(novaOrg);
+        call.enqueue(new Callback<Organizacao>() {
+            @Override
+            public void onResponse(Call<Organizacao> call, Response<Organizacao> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Long orgId = response.body().getId();
+                    if (orgId != null) {
                         btnCadastrar.setEnabled(true);
-                        Toast.makeText(CadastroActivity.this, "Erro ao criar: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showSuccessOrgDialog(orgId);
+                    } else {
+                        buscarOrganizacaoPorCnpj(novaOrg.getCnpj());
                     }
-                }
-
-                @Override
-                public void onFailure(Call<Organizacao> call, Throwable t) {
+                } else {
                     btnCadastrar.setEnabled(true);
-                    Toast.makeText(CadastroActivity.this, "Erro conexão", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CadastroActivity.this, "Erro ao criar: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+            }
+
+            @Override
+            public void onFailure(Call<Organizacao> call, Throwable t) {
+                btnCadastrar.setEnabled(true);
+                Toast.makeText(CadastroActivity.this, "Erro conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void buscarOrganizacaoPorCnpj(String cnpj) {
@@ -348,14 +277,13 @@ public class CadastroActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().getId() != null) {
                     showSuccessOrgDialog(response.body().getId());
                 } else {
-                    Toast.makeText(CadastroActivity.this, "Org criada, mas não foi possível recuperar o ID.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(CadastroActivity.this, "Criado, mas ID não recuperado.", Toast.LENGTH_LONG).show();
                 }
             }
-
             @Override
             public void onFailure(Call<Organizacao> call, Throwable t) {
                 btnCadastrar.setEnabled(true);
-                Toast.makeText(CadastroActivity.this, "Org criada, erro ao recuperar ID.", Toast.LENGTH_LONG).show();
+                Toast.makeText(CadastroActivity.this, "Erro recuperação ID", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -373,7 +301,7 @@ public class CadastroActivity extends AppCompatActivity {
                     if (orgId != null) {
                         idOrganizacao.setText(String.valueOf(orgId));
                     }
-                    Toast.makeText(this, "Preencha os dados do usuário", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CadastroActivity.this, "Preencha os dados do usuário", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("NÃO QUERO", (dialog, which) -> {
                     finish(); 

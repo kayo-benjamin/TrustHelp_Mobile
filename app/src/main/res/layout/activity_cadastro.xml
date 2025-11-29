@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:paddingBottom="32dp">
 
-        <!-- Cabeçalho -->
         <TextView
             android:id="@+id/tv_title_cadastro"
             android:layout_width="wrap_content"
@@ -26,7 +25,6 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="48dp"/>
 
-        <!-- Seleção de Tipo -->
         <RadioGroup
             android:id="@+id/rg_tipo_cadastro"
             android:layout_width="wrap_content"
@@ -54,7 +52,6 @@
                 android:textSize="16sp"/>
         </RadioGroup>
 
-        <!-- Container para os Formulários (Resolve a sobreposição) -->
         <FrameLayout
             android:id="@+id/form_container"
             android:layout_width="match_parent"
@@ -64,7 +61,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Formulário Usuário -->
+            <!-- USUÁRIO -->
             <LinearLayout
                 android:id="@+id/layout_usuario"
                 android:layout_width="match_parent"
@@ -103,13 +100,11 @@
                     android:padding="14dp"
                     android:layout_marginBottom="16dp"/>
 
-                <!-- IDs (Papel e Organização) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="2">
-                    
                     <EditText
                         android:id="@+id/editIdPapel"
                         android:layout_width="0dp"
@@ -120,7 +115,6 @@
                         android:inputType="number"
                         android:padding="14dp"
                         android:layout_marginEnd="8dp"/>
-
                     <EditText
                         android:id="@+id/editIdOrganizacao"
                         android:layout_width="0dp"
@@ -134,7 +128,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Formulário Organização -->
+            <!-- ORGANIZAÇÃO -->
             <LinearLayout
                 android:id="@+id/layout_organizacao"
                 android:layout_width="match_parent"
@@ -183,10 +177,8 @@
                     android:inputType="phone"
                     android:padding="14dp"/>
             </LinearLayout>
-
         </FrameLayout>
 
-        <!-- Botão Cadastrar (Fica SEMPRE abaixo do container de formulários) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cadastrar"
             android:layout_width="0dp"

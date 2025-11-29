@@ -3,23 +3,27 @@ package com.example.mobile_thelp.model;
 import com.google.gson.annotations.SerializedName;
 
 public class User {
-    @SerializedName("idUsuario")
+
+    @SerializedName(value = "idUsuario", alternate = {"id", "id_usuario"})
     private Integer idUsuario;
 
-    @SerializedName("usuNome")
+    @SerializedName(value = "usuNome", alternate = {"nome", "usu_nome"})
     private String usuNome;
 
-    @SerializedName("usuEmail")
+    @SerializedName(value = "usuEmail", alternate = {"email", "usu_email"})
     private String usuEmail;
 
-    @SerializedName("usuSenha")
+    @SerializedName(value = "usuSenha", alternate = {"password", "usu_senha", "senha"})
     private String usuSenha;
-    
-    @SerializedName("idPapel")
+
+    @SerializedName(value = "idPapel", alternate = {"id_papel", "papelId"})
     private Integer idPapel;
 
-    @SerializedName("idOrganizacao")
+    @SerializedName(value = "idOrganizacao", alternate = {"id_organizacao", "organizacaoId"})
     private Integer idOrganizacao;
+
+    @SerializedName("ativo")
+    private Boolean ativo;
 
     // Construtores
     public User() {}
@@ -32,7 +36,7 @@ public class User {
         this.idOrganizacao = idOrganizacao;
     }
 
-    // Getters e Setters
+    // Getters Principais
     public Integer getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Integer idUsuario) { this.idUsuario = idUsuario; }
 
@@ -50,4 +54,20 @@ public class User {
 
     public Integer getIdOrganizacao() { return idOrganizacao; }
     public void setIdOrganizacao(Integer idOrganizacao) { this.idOrganizacao = idOrganizacao; }
+
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+
+    // Métodos de compatibilidade (Aliases) para evitar erros se o código chamar o nome antigo
+    public Integer getId() { return idUsuario; }
+    public void setId(Integer id) { this.idUsuario = id; }
+
+    public String getNome() { return usuNome; }
+    public void setNome(String nome) { this.usuNome = nome; }
+
+    public String getEmail() { return usuEmail; }
+    public void setEmail(String email) { this.usuEmail = email; }
+
+    public String getPassword() { return usuSenha; }
+    public void setPassword(String password) { this.usuSenha = password; }
 }

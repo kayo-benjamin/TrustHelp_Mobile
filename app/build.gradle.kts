@@ -37,17 +37,20 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // Testes Unitários
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.10.0") // Adicionado Mockito
-    testImplementation("org.mockito:mockito-inline:5.10.0") // Para mockar classes finais/estáticas se necessário
+    testImplementation("org.mockito:mockito-core:5.10.0")
+    testImplementation("org.mockito:mockito-inline:5.10.0")
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation("androidx.cardview:cardview:1.0.0")
+
+    // Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3") // Adicionado explicitamente
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 }

@@ -36,8 +36,8 @@ public class DashboardFragment extends Fragment {
     private TextView tvWelcomeTitle;
     private ApiService apiService;
     
-    // ✅ MODO OFFLINE ATIVADO PARA TESTES SEM API
-    private boolean isOfflineMode = true; 
+    // ✅ MODO ONLINE ATIVADO (Integração API)
+    private boolean isOfflineMode = false; 
 
     @Nullable
     @Override
@@ -54,19 +54,15 @@ public class DashboardFragment extends Fragment {
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
         
         SharedPreferences prefs = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        String userName = prefs.getString("user_name", "Visitante");
+        String userName = prefs.getString("user_name", "Usuário");
         tvWelcomeTitle.setText("Olá, " + userName + "!");
 
         apiService = RetrofitClient.getApiService();
 
         setupRecyclerView();
         
-        // Carrega mock ou API dependendo do modo
-        if (isOfflineMode) {
-            loadMockChamados();
-        } else {
-            // loadUserChamados();
-        }
+        // Carrega da API
+        loadUserChamados();
 
         view.findViewById(R.id.btn_create_ticket).setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.action_home_to_create)
@@ -79,23 +75,51 @@ public class DashboardFragment extends Fragment {
 
     private void setupRecyclerView() {
         rvChamados.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvChamados.setAdapter(new TicketsAdapter(new ArrayList<>(), c -> {}));
+        TicketsAdapter adapter = new TicketsAdapter(new ArrayList<>(), chamado -> {
+            Toast.makeText(getContext(), "Detalhes: " + chamado.getTitulo(), Toast.LENGTH_SHORT).show();
+        });
+        rvChamados.setAdapter(adapter);
     }
-    
-    private void loadMockChamados() {
-        if (progressBar != null) progressBar.setVisibility(View.GONE);
-        List<Chamado> mockList = new ArrayList<>();
-        mockList.add(new Chamado("Erro de Acesso", "Não consigo acessar o ERP.", 1, 1, "alta"));
-        mockList.add(new Chamado("Instalação de Software", "Solicito instalação do Office.", 1, 1, "media"));
-        mockList.add(new Chamado("Monitor Queimado", "O monitor não liga mais.", 1, 1, "alta"));
-        
-        updateList(mockList);
+
+    private void loadUserChamados() {
+        SharedPreferences prefs = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        long userId = prefs.getLong("user_id", -1);
+
+        if (userId == -1) {
+            Toast.makeText(getContext(), "Usuário não identificado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+
+        Call<List<Chamado>> call = apiService.getChamadosPorUsuario(userId);
+        call.enqueue(new Callback<List<Chamado>>() {
+            @Override
+            public void onResponse(Call<List<Chamado>> call, Response<List<Chamado>> response) {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    updateList(response.body());
+                } else {
+                    Toast.makeText(getContext(), "Erro ao carregar: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Chamado>> call, Throwable t) {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Falha na conexão", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     private void updateList(List<Chamado> chamados) {
         if (getContext() == null) return;
+        if (chamados.isEmpty()) {
+            Toast.makeText(getContext(), "Nenhum chamado encontrado", Toast.LENGTH_SHORT).show();
+        }
         TicketsAdapter adapter = new TicketsAdapter(chamados, item -> 
-            Toast.makeText(getContext(), "Visualizando: " + item.getTitulo(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(getContext(), "Abrindo: " + item.getTitulo(), Toast.LENGTH_SHORT).show()
         );
         rvChamados.setAdapter(adapter);
     }
@@ -103,6 +127,6 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isOfflineMode) loadMockChamados();
+        loadUserChamados(); 
     }
 }

@@ -86,7 +86,12 @@ public class DashboardFragment extends Fragment {
         long userId = prefs.getLong("user_id", -1);
 
         if (userId == -1) {
-            Toast.makeText(getContext(), "Usuário não identificado", Toast.LENGTH_SHORT).show();
+            // Se não tiver ID, tenta carregar mock se estiver offline, ou mostra erro
+            if (isOfflineMode) {
+                loadMockChamados();
+            } else {
+                Toast.makeText(getContext(), "Usuário não identificado", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -122,6 +127,13 @@ public class DashboardFragment extends Fragment {
             Toast.makeText(getContext(), "Abrindo: " + item.getTitulo(), Toast.LENGTH_SHORT).show()
         );
         rvChamados.setAdapter(adapter);
+    }
+    
+    private void loadMockChamados() {
+        // Implementação mock mantida caso precise reativar, mas não usada no modo online
+        List<Chamado> mockList = new ArrayList<>();
+        mockList.add(new Chamado("Teste Mock", "Descricao", 1, 1, "alta"));
+        updateList(mockList);
     }
     
     @Override

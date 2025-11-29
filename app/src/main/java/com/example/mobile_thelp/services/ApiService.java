@@ -23,83 +23,64 @@ import retrofit2.http.Query;
 public interface ApiService {
 
     // ============================================
-    // AUTENTICAÇÃO
+    // AUTENTICAÇÃO (Prefixo api/ adicionado pois base é a raiz)
     // ============================================
-    @POST("auth/cadastro")
+    @POST("api/auth/cadastro")
     Call<ApiResponse> cadastro(@Body User usuario);
 
-
-    @POST("auth/login")
+    @POST("api/auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
 
     // ============================================
     // ORGANIZAÇÃO
     // ============================================
 
-    @POST("organizacao")
+    @POST("api/organizacao")
     Call<Organizacao> criarOrganizacao(@Body Organizacao organizacao);
 
-
-    @GET("organizacao/{id}")
+    @GET("api/organizacao/{id}")
     Call<Organizacao> getOrganizacaoById(@Path("id") Long id);
 
-
-    @GET("organizacao")
+    @GET("api/organizacao")
     Call<List<Organizacao>> getAllOrganizacoes();
 
-    @GET("organizacao/ativas")
+    @GET("api/organizacao/ativas")
     Call<List<Organizacao>> getOrganizacoesAtivas();
 
-
-    @GET("organizacao/cnpj/{cnpj}")
+    @GET("api/organizacao/cnpj/{cnpj}")
     Call<Organizacao> getOrganizacaoByCnpj(@Path("cnpj") String cnpj);
 
-    @PUT("organizacao/{id}")
+    @PUT("api/organizacao/{id}")
     Call<Organizacao> atualizarOrganizacao(@Path("id") Long id, @Body Organizacao organizacao);
 
-    // ✅ NOVO: PUT /organizacao/{id}/desativar
-    @PUT("organizacao/{id}/desativar")
+    @PUT("api/organizacao/{id}/desativar")
     Call<Organizacao> desativarOrganizacao(@Path("id") Long id);
-    @POST("organizacao/cadastrar")
+
+    @POST("api/organizacao/cadastrar")
     Call<ApiResponse> cadastrarOrganizacao(@Body Organizacao organizacao);
 
-    @GET("organizacao/verificar/{id}")
+    @GET("api/organizacao/verificar/{id}")
     Call<ApiResponse> verificarOrganizacao(@Path("id") Integer id);
 
     // ============================================
     // USUÁRIOS
     // ============================================
 
-    // ✅ CORRIGIDO: GET /api/{id} (era /usuarios/{id})
-    @GET("api/{id}")
+    @GET("api/usuarios/{id}")
     Call<User> getUsuarioById(@Path("id") Long id);
 
-    // ✅ NOVO: GET /api - listar todos usuários
-    @GET("api")
+    @GET("api/usuarios")
     Call<List<User>> getAllUsuarios();
 
-    // ✅ NOVO: GET /api/email/{email}
-    @GET("api/email/{email}")
+    @GET("api/usuarios/email/{email}")
     Call<User> getUsuarioByEmail(@Path("email") String email);
 
-    // ✅ NOVO: POST /api - criar usuário
-    @POST("api")
+    @POST("api/usuarios")
     Call<User> criarUsuario(@Body User usuario);
 
     // ============================================
     // CHAMADOS
     // ============================================
-
-    // ✅ Endpoint: POST /chamados/save
-    // ============================================
-// CHAMADOS - CORRIGIDO
-// ============================================
-
-// ❌ REMOVER ISSO:
-// @POST("chamados/save")
-// @GET("chamados/usuario/{idUsuario}")
-
-// ✅ USAR ISSO:
 
     // Criar chamado
     @POST("api/chamados")
@@ -125,7 +106,7 @@ public interface ApiService {
     @PATCH("api/chamados/{id}/status")
     Call<Chamado> atualizarStatusChamado(@Path("id") Integer id, @Query("status") String status);
 
-    // Atribuir usuário
+    // Atribuir usuário (Erro de digitação corrigido aqui)
     @PATCH("api/chamados/{id}/atribuir")
     Call<Chamado> atribuirUsuario(@Path("id") Integer id, @Query("idUsuario") Integer idUsuario);
 
@@ -137,16 +118,18 @@ public interface ApiService {
     @DELETE("api/chamados/{id}")
     Call<ApiResponse> deleteChamado(@Path("id") Integer id);
 
+    // Listar chamados por usuário (usado no Dashboard)
+    @GET("api/chamados/usuario/{idUsuario}")
+    Call<List<Chamado>> getChamadosPorUsuario(@Path("idUsuario") Long idUsuario);
+
 
     // ============================================
     // HEALTH CHECK
     // ============================================
 
-    // ✅ NOVO: GET /health - verificar saúde do backend
-    @GET("health")
+    @GET("api/health")
     Call<HealthCheckResponse> getBackendHealth();
 
-    // ✅ NOVO: GET /health/routes - listar rotas registradas
-    @GET("health/routes")
+    @GET("api/health/routes")
     Call<ApiResponse> getRegisteredRoutes();
 }

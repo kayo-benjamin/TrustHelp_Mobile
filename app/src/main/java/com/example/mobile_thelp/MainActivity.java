@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse loginResponse = response.body();
 
+                    // Ajuste conforme a resposta da sua API
                     if (loginResponse.getToken() != null) {
                         Toast.makeText(MainActivity.this, "Login bem-sucedido!", Toast.LENGTH_SHORT).show();
 
